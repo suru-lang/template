@@ -206,6 +206,8 @@ xs を 二倍濾過する とは
 
 33. **Template names from values.** `継承する`, `挿入する` and `取り込む` (and `extends`, `include`, `import`) take an expression, like `{% 頁型 を 継承する %}` or `{% 「部品/」 + 種類 + 「.html」 を 挿入する %}`; it must give a string. Names set with `とは` and macros at the top level before `継承する` can be used in its name. With files, `雛形設定読込描画する` reads the names written as strings first; when a name from a value is not read yet, it reads that file and renders again, so only the files used are read.
 
+34. **Text is read in pieces, not one character at a time.** The template is split at each `{`, and the text between is kept whole; only the commands are read character by character. Large templates use little memory: 125 KB of text renders with about 60 MB, where it ran out of memory before. `例/大きさ.suru` renders a template of about 58,000 characters with 900 commands in about 5 seconds with `suru`, 2 of them for starting.
+
 ## Tests
 
 ```sh
@@ -215,7 +217,8 @@ kumu 点検
 
 ## Future work
 
-- Speed up large templates in the interpreter (a 10 KB template takes about 3 seconds with `suru`; compiled programs are much faster)
+- Make the interpreter start faster: `suru` spends about 2 seconds checking the types of this library before running (compiled programs don't)
+- Fewer steps for each command in the interpreter (about 2 ms each now)
 
 ## License
 
