@@ -4,7 +4,7 @@ English | [日本語](README_jp.md)
 
 A Jinja2-like template engine for [Suru (「する」)](https://github.com/suru-lang/suru), a programming language in Japanese. It is written entirely in Suru and needs no C library. It reads a template string, fills in values, and returns the text, for example the HTML pages of a Web app made with [suru-lang/http](https://github.com/suru-lang/http).
 
-The plan is [#1](https://github.com/suru-lang/template/issues/1). This version has substitution and comments; loops, conditions, filters, inheritance and auto-escaping come next.
+The plan is [#1](https://github.com/suru-lang/template/issues/1). This version has substitution, comments and loops; conditions, filters, inheritance and auto-escaping come next.
 
 ## Installing
 
@@ -48,6 +48,10 @@ Templates:
 | `{{ 品々 の 2番目 }}` ・ `{{ 品々 の 2 }}` ・ `{{ 品々.2 }}` | the second element of 品々 (positions start at 1) |
 | `{{ 「文字」 }}` ・ `{{ 3 }}` | a string or a number as is |
 | `{# … #}` | a comment (writes nothing) |
+| `{% 品々 の それぞれ を 品 として %}` … `{% 以上 %}` | repeat for each element of 品々 (`{% for 品 in 品々 %}` … `{% endfor %}`) |
+| `{% 値段表 の それぞれ を 名 と 値 として %}` | repeat for each name and value of an object (`{% for 名, 値 in 値段表 %}`) |
+| `{% 空なら %}` | inside a loop: what to write when there is nothing to repeat (`{% else %}`) |
+| `{{ 繰り返し の 番号 }}` | inside a loop: the loop values (see Decisions) |
 
 ## Decisions
 
@@ -59,6 +63,11 @@ Templates:
 6. **「の」 and 「.」 are the same.** `客 の 名前` follows Suru's way of reading fields, and `客.名前` Jinja's. A number or 「N番目」 after them is a position, counted from 1 as in Suru's standard library.
 7. **Closers inside strings don't count.** In `{{ 「}}」 }}`, the 「}}」 inside 「」 is part of the string. 「」 inside strings nest, as in Suru.
 
+8. **Loops read like Suru.** `{% 品々 の それぞれ を 品 として %}` uses Suru's `の それぞれ`, and `{% for 品 in 品々 %}` is the same. A loop ends with `{% 以上 %}` (also `{% 以上です %}` and `{% endfor %}`). The names given are seen only inside the loop and hide the same names outside it.
+9. **Objects are repeated in written order.** With two names (`名 と 値 として`, `for 名, 値 in …`), they are the name and the value of each item; with one name, the name only, as in Jinja. A list takes one name.
+10. **Loop values.** Inside a loop, `繰り返し` (also `loop`) has `番号` (from 1), `長さ`, `最初である`, `最後である` and `残数` (how many remain), and Jinja's `index`, `index0`, `length`, `first`, `last` and `revindex`. In nested loops it is the innermost loop's.
+11. **The empty case.** `{% 空なら %}` (or `{% else %}`) inside a loop starts what is written when the list or object is empty.
+
 ## Tests
 
 ```sh
@@ -68,7 +77,7 @@ kumu 点検
 
 ## Future work
 
-- The rest of the plan in [#1](https://github.com/suru-lang/template/issues/1): loops, conditions, filters, files with inheritance and include, auto-escaping, and an example with suru-lang/http
+- The rest of the plan in [#1](https://github.com/suru-lang/template/issues/1): conditions, filters, files with inheritance and include, auto-escaping, and an example with suru-lang/http
 - Speed up large templates in the interpreter (a 10 KB template takes about 2 seconds with `suru`; compiled programs are much faster)
 
 ## License
