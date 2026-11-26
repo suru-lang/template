@@ -4,7 +4,7 @@ English | [日本語](README_jp.md)
 
 A Jinja2-like template engine for [Suru (「する」)](https://github.com/suru-lang/suru), a programming language in Japanese. It is written entirely in Suru and needs no C library. It reads a template string, fills in values, and returns the text, for example the HTML pages of a Web app made with [suru-lang/http](https://github.com/suru-lang/http).
 
-The plan is [#1](https://github.com/suru-lang/template/issues/1). This version has everything in the plan: substitution, comments, loops, conditions, expressions, filters, files with inheritance and include, auto-escaping and whitespace control.
+The first plan is [#1](https://github.com/suru-lang/template/issues/1) and the next is [#5](https://github.com/suru-lang/template/issues/5). This version has everything in the first plan: substitution, comments, loops, conditions, expressions, filters, files with inheritance and include, auto-escaping and whitespace control.
 
 ## Installing
 
@@ -61,6 +61,7 @@ Templates:
 | `{% もし 在庫 > 0 ならば %}` … `{% そうでなく もし 予約可 ならば %}` … `{% そうでなければ %}` … `{% 以上 %}` | conditions (`{% if 在庫 > 0 %}` … `{% elif 予約可 %}` … `{% else %}` … `{% endif %}`) |
 | `{{ 値段 * 2 + 1 }}` ・ `{{ 名 + 「さん」 }}` | expressions (see Decisions) |
 | `{{ 名 を 空白除去して 大文字にする }}` ・ `{{ 名 \| trim \| upper }}` | filters (below) |
+| `{% 合計 とは 値段 * 2 %}` | give a value a name for the rest of the block (`{% set 合計 = 値段 * 2 %}`) |
 | `{% 「土台.html」 を 継承する %}` | write 土台.html with this template's blocks (`{% extends "土台.html" %}`) |
 | `{% 区画 本文 %}` … `{% 以上 %}` | a block that a child template can replace (`{% block 本文 %}` … `{% endblock %}`) |
 | `{{ 親区画 }}` | inside a block: the parent's content of the same block (`{{ super() }}`) |
@@ -188,6 +189,8 @@ xs を 二倍濾過する とは
 
 27. **Whitespace control is Jinja's.** A `-` just inside a delimiter (`{%-`, `-%}`, `{{-`, `-}}`, `{#-`, `-#}`) removes the spaces, tabs and newlines of the text on that side. `{{ -x }}`, with a space before `-`, is a negative number as before.
 
+28. **Names are set the Suru way.** `{% 合計 とは 値段 * 2 %}` is a Suru definition, and `{% set 合計 = 値段 * 2 %}` is the same. The name is seen from there to the end of the block it is in (the template, a loop's body, a branch or a 区画), and hides the same name outside. Unlike Jinja, a name set in a branch of `もし` is not seen after `{% 以上 %}`; set it before the branch instead. A name used before it is set is an error, as other missing names.
+
 ## Tests
 
 ```sh
@@ -198,7 +201,7 @@ kumu 点検
 ## Future work
 
 - Settings that trim the newline after a command and the spaces before it (Jinja's `trim_blocks` and `lstrip_blocks`)
-- Names set inside templates (`{% set %}`, `{% with %}`) and macros (`{% macro %}`)
+- Macros (`{% macro %}`)
 - Template names from values in `継承する` and `挿入する` (now strings written in the template)
 - Speed up large templates in the interpreter (a 10 KB template takes about 3 seconds with `suru`; compiled programs are much faster)
 
