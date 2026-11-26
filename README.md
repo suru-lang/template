@@ -4,7 +4,7 @@ English | [日本語](README_jp.md)
 
 A Jinja2-like template engine for [Suru (「する」)](https://github.com/suru-lang/suru), a programming language in Japanese. It is written entirely in Suru and needs no C library. It reads a template string, fills in values, and returns the text, for example the HTML pages of a Web app made with [suru-lang/http](https://github.com/suru-lang/http).
 
-The plan is [#1](https://github.com/suru-lang/template/issues/1). This version has substitution, comments, loops, conditions, expressions and filters; inheritance and auto-escaping come next.
+The plan is [#1](https://github.com/suru-lang/template/issues/1). This version has substitution, comments, loops, conditions, expressions, filters, and files with inheritance and include; auto-escaping comes next.
 
 ## Installing
 
@@ -40,6 +40,9 @@ This prints 「花子さん、いらっしゃいませ。今日のおすすめ�
 | `g を 値 で 雛形適用する` | fill values into a template already read (to render the same one many times): `（文字列 と 文字列） の 成否` |
 | `t を 値 で 設定 に 雛形設定描画する` ・ `g を 値 で 設定 に 雛形設定適用する` | the same with a setting (`雛形既定設定` and what is added to it) |
 | `設定 に 名前 と 関数 を 雛形濾過追加する` | a setting with your own filter added (see below) |
+| `名前 を 値 で 雛形読込描画する` ・ `名前 を 値 で 設定 に 雛形設定読込描画する` | read the file and render it (an action giving `（文字列 と 文字列） の 成否`); files named by inheritance and include are read from the same folder |
+| `設定 に 場所 を 雛形場所設定する` | a setting whose files are read from the folder 場所 |
+| `設定 に 名前 と 文字列 を 雛形部品追加する` | a setting with a template that inheritance and include can use by its name |
 
 Templates:
 
@@ -57,6 +60,10 @@ Templates:
 | `{% もし 在庫 > 0 ならば %}` … `{% そうでなく もし 予約可 ならば %}` … `{% そうでなければ %}` … `{% 以上 %}` | conditions (`{% if 在庫 > 0 %}` … `{% elif 予約可 %}` … `{% else %}` … `{% endif %}`) |
 | `{{ 値段 * 2 + 1 }}` ・ `{{ 名 + 「さん」 }}` | expressions (see Decisions) |
 | `{{ 名 を 空白除去して 大文字にする }}` ・ `{{ 名 \| trim \| upper }}` | filters (below) |
+| `{% 「土台.html」 を 継承する %}` | write 土台.html with this template's blocks (`{% extends "土台.html" %}`) |
+| `{% 区画 本文 %}` … `{% 以上 %}` | a block that a child template can replace (`{% block 本文 %}` … `{% endblock %}`) |
+| `{{ 親区画 }}` | inside a block: the parent's content of the same block (`{{ super() }}`) |
+| `{% 「頭.html」 を 挿入する %}` | write 頭.html here with the same names (`{% include "頭.html" %}`) |
 
 Filters (each can be written the Suru way or the Jinja way):
 
@@ -77,7 +84,33 @@ Filters (each can be written the Suru way or the Jinja way):
 | `x を 桁区切する` | | 「1,234,567」 |
 | `x を 文字列化する` ・ `JSON文字列にする` | `x \| string` ・ `tojson` | as written by `{{ }}`, or as JSON |
 
-Filters for a template are added to a setting:
+Inheritance with files: a page `頁.html` that uses `土台.html`.
+
+```
+{# 土台.html #}
+<title>{% 区画 題 %}八百屋{% 以上 %}</title>
+<main>{% 区画 本文 %}{% 以上 %}</main>
+
+{# 頁.html #}
+{% 「土台.html」 を 継承する %}
+{% 区画 題 %}品書き - {{ 親区画 }}{% 以上 %}
+{% 区画 本文 %}{% 品々 の それぞれ を 品 として %}<p>{{ 品 }}</p>{% 以上 %}{% 以上 %}
+```
+
+```
+「JSON」 を 読み込んで 使う
+「雛形」 を 読み込んで 使う
+
+頁表示する とは 手順
+  設定 とは 雛形既定設定 に 「画面」 を 雛形場所設定する
+  値 とは 「{"品々": ["りんご", "みかん"]}」 を JSON読取した 結果
+  r とは 「頁.html」 を 値 で 設定 に 雛形設定読込描画した 結果
+  r を 表示する
+
+頁表示する
+```
+
+Your own filters are added to a setting:
 
 ```
 「JSON」 を 読み込んで 使う
@@ -122,6 +155,12 @@ xs を 二倍濾過する とは
 18. **Your own filters are Suru functions.** A filter added with `雛形濾過追加する` receives the list of the value and the arguments (in the order で, から, へ, に, より, or as written after `|`) and gives `値 の 成功` or `理由 の 失敗`; a failure becomes an error with the line. Its name must end with する to be called the Suru way; any name works after `|`.
 19. **Strings in Jinja quotes.** Besides 「…」, `"…"` and `'…'` can be written in templates, for writing Jinja's way.
 
+20. **Files are read before rendering.** `雛形設定読込描画する` reads the file, then the files named in its `継承する` and `挿入する` (and theirs), from the folder of the setting, and then renders without reading more. Names of templates are written as strings (「土台.html」, not a value), so all files are known before rendering. A missing file is a `失敗` such as 「「無い.html」というテンプレートのファイル(画面/無い.html)を読めません」.
+21. **Inheritance is Jinja's.** A template with `継承する` writes its parent, with its blocks replacing the parent's blocks of the same names; what it writes outside blocks is not written. Parents can inherit again, and `{{ 親区画 }}` writes the next parent's content. Without inheritance, a block writes its own content.
+22. **Include sees the same names.** An included template is rendered with the names at that place (inside a loop, the loop's names too). Its blocks are its own.
+23. **Errors name the template.** An error in a template given by name begins with its name, like 「「土台.html」の3行目: …」. A template that inherits or includes itself, directly or not, is an error 「…の継承か挿入が輪になっています」.
+24. **Templates can also be given as strings.** `雛形部品追加する` adds a template by name to the setting, so inheritance and include also work with `雛形設定描画する` and in tests, without files.
+
 ## Tests
 
 ```sh
@@ -131,7 +170,7 @@ kumu 点検
 
 ## Future work
 
-- The rest of the plan in [#1](https://github.com/suru-lang/template/issues/1): files with inheritance and include, auto-escaping, and an example with suru-lang/http
+- The rest of the plan in [#1](https://github.com/suru-lang/template/issues/1): auto-escaping, and an example with suru-lang/http
 - Speed up large templates in the interpreter (a 10 KB template takes about 2 seconds with `suru`; compiled programs are much faster)
 
 ## License
