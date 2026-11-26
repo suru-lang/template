@@ -71,6 +71,7 @@ Templates:
 | `{% 区画 本文 %}` … `{% 以上 %}` | a block that a child template can replace (`{% block 本文 %}` … `{% endblock %}`) |
 | `{{ 親区画 }}` | inside a block: the parent's content of the same block (`{{ super() }}`) |
 | `{% 「頭.html」 を 挿入する %}` | write 頭.html here with the same names (`{% include "頭.html" %}`) |
+| `{% 頁型 を 継承する %}` ・ `{% 品 を 挿入する %}` | the name of the template can be any expression giving a string |
 | `{%- … -%}` ・ `{{- … -}}` ・ `{#- … -#}` | remove the spaces and newlines before or after, on the side of the `-` |
 | `{%+ … +%}` | with `雛形行整設定する`: keep the spaces before or the newline after, on the side of the `+` |
 
@@ -184,7 +185,7 @@ xs を 二倍濾過する とは
 18. **Your own filters are Suru functions.** A filter added with `雛形濾過追加する` receives the list of the value and the arguments (in the order で, から, へ, に, より, or as written after `|`) and gives `値 の 成功` or `理由 の 失敗`; a failure becomes an error with the line. Its name must end with する to be called the Suru way; any name works after `|`.
 19. **Strings in Jinja quotes.** Besides 「…」, `"…"` and `'…'` can be written in templates, for writing Jinja's way.
 
-20. **Files are read before rendering.** `雛形設定読込描画する` reads the file, then the files named in its `継承する` and `挿入する` (and theirs), from the folder of the setting, and then renders without reading more. Names of templates are written as strings (「土台.html」, not a value), so all files are known before rendering. A missing file is a `失敗` such as 「「無い.html」というテンプレートのファイル(画面/無い.html)を読めません」.
+20. **Files are read before rendering.** `雛形設定読込描画する` reads the file, then the files named in its `継承する` and `挿入する` (and theirs), from the folder of the setting, and then renders. Names written as strings (「土台.html」) are known before rendering; for names from values, see Template names from values below. A missing file is a `失敗` such as 「「無い.html」というテンプレートのファイル(画面/無い.html)を読めません」.
 21. **Inheritance is Jinja's.** A template with `継承する` writes its parent, with its blocks replacing the parent's blocks of the same names; what it writes outside blocks is not written. Parents can inherit again, and `{{ 親区画 }}` writes the next parent's content. Without inheritance, a block writes its own content.
 22. **Include sees the same names.** An included template is rendered with the names at that place (inside a loop, the loop's names too). Its blocks are its own.
 23. **Errors name the template.** An error in a template given by name begins with its name, like 「「土台.html」の3行目: …」. A template that inherits or includes itself, directly or not, is an error 「…の継承か挿入が輪になっています」.
@@ -203,6 +204,8 @@ xs を 二倍濾過する とは
 
 32. **Line trimming is Jinja's `trim_blocks` and `lstrip_blocks` together.** With `雛形行整設定する` and `真`, the newline just after `{% %}` or `{# #}` is removed, and so are the spaces and tabs between the start of the line and the command, so commands on their own lines leave no empty lines. `{{ }}` is not changed. `{%+` keeps the spaces before and `+%}` keeps the newline after. It is off by default. The trimming happens when a template is read, so `雛形設定描画する`, `雛形設定読込描画する` and templates used by inheritance, include and `取り込む` use the setting, while `雛形解析する` doesn't; use `雛形設定解析する` to read a template once with it.
 
+33. **Template names from values.** `継承する`, `挿入する` and `取り込む` (and `extends`, `include`, `import`) take an expression, like `{% 頁型 を 継承する %}` or `{% 「部品/」 + 種類 + 「.html」 を 挿入する %}`; it must give a string. Names set with `とは` and macros at the top level before `継承する` can be used in its name. With files, `雛形設定読込描画する` reads the names written as strings first; when a name from a value is not read yet, it reads that file and renders again, so only the files used are read.
+
 ## Tests
 
 ```sh
@@ -212,7 +215,6 @@ kumu 点検
 
 ## Future work
 
-- Template names from values in `継承する` and `挿入する` (now strings written in the template)
 - Speed up large templates in the interpreter (a 10 KB template takes about 3 seconds with `suru`; compiled programs are much faster)
 
 ## License
