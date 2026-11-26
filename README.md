@@ -62,6 +62,9 @@ Templates:
 | `{{ 値段 * 2 + 1 }}` ・ `{{ 名 + 「さん」 }}` | expressions (see Decisions) |
 | `{{ 名 を 空白除去して 大文字にする }}` ・ `{{ 名 \| trim \| upper }}` | filters (below) |
 | `{% 合計 とは 値段 * 2 %}` | give a value a name for the rest of the block (`{% set 合計 = 値段 * 2 %}`) |
+| `{% 名 を 値 で 入力欄する とは %}` … `{% 以上 %}` | a macro (`{% macro 入力欄(名, 値) %}` … `{% endmacro %}`) |
+| `{{ 「x」 を 「y」 で 入力欄する }}` ・ `{{ 線引する }}` | call a macro (`{{ 入力欄('x', 'y') }}` ・ `{{ 線引() }}`) |
+| `{% 「部品.html」 を 取り込む %}` | use the macros of 部品.html (`{% import "部品.html" %}`) |
 | `{% 「土台.html」 を 継承する %}` | write 土台.html with this template's blocks (`{% extends "土台.html" %}`) |
 | `{% 区画 本文 %}` … `{% 以上 %}` | a block that a child template can replace (`{% block 本文 %}` … `{% endblock %}`) |
 | `{{ 親区画 }}` | inside a block: the parent's content of the same block (`{{ super() }}`) |
@@ -191,6 +194,10 @@ xs を 二倍濾過する とは
 
 28. **Names are set the Suru way.** `{% 合計 とは 値段 * 2 %}` is a Suru definition, and `{% set 合計 = 値段 * 2 %}` is the same. The name is seen from there to the end of the block it is in (the template, a loop's body, a branch or a 区画), and hides the same name outside. Unlike Jinja, a name set in a branch of `もし` is not seen after `{% 以上 %}`; set it before the branch instead. A name used before it is set is an error, as other missing names.
 
+29. **Macros are written like Suru functions.** `{% 名 を 値 で 入力欄する とは %}` … `{% 以上 %}` defines a macro the way Suru defines a function, and it is called like a filter: `{{ 「x」 を 「y」 で 入力欄する }}`. The values are matched to the names by particle, so the order of the arguments doesn't matter. A macro with no arguments is `{% 線引する とは %}` and is called by its name alone, `{{ 線引する }}`, so a bare name ending with する is a call, not a value. Jinja's `{% macro 入力欄(名, 値) %}` is the same, called with `{{ 入力欄('x', 'y') }}` and the values in written order. The number of values must match.
+30. **Macros see their arguments and the names where they were defined.** Like a name set with `とは`, a macro can be used from there to the end of its block, and also inside itself, so it can call itself. Its body sees its arguments and the names at the place it was defined, not the names where it is called. What it writes is safe: it is escaped inside the body, not again.
+31. **`取り込む` takes all macros of a template.** `{% 「部品.html」 を 取り込む %}` (`{% import "部品.html" %}`) makes the macros at the top level of 部品.html usable from there, without writing anything of 部品.html. Unlike Jinja's `import … as`, there is no name before the macros. The file is read before rendering, like the ones for inheritance and include.
+
 ## Tests
 
 ```sh
@@ -201,7 +208,6 @@ kumu 点検
 ## Future work
 
 - Settings that trim the newline after a command and the spaces before it (Jinja's `trim_blocks` and `lstrip_blocks`)
-- Macros (`{% macro %}`)
 - Template names from values in `継承する` and `挿入する` (now strings written in the template)
 - Speed up large templates in the interpreter (a 10 KB template takes about 3 seconds with `suru`; compiled programs are much faster)
 
