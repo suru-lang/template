@@ -4,7 +4,7 @@
 
 日本語プログラミング言語 [する](https://github.com/suru-lang/suru) の、Jinja2 のようなテンプレートエンジンです。する だけで書いてあり、C のライブラリは要りません。テンプレートの文字列を読み、値を差し込んで文字列を返します。たとえば [suru-lang/http](https://github.com/suru-lang/http) で作る Web アプリの HTML の画面に使えます。
 
-最初の計画は [#1](https://github.com/suru-lang/template/issues/1)、次の計画は [#5](https://github.com/suru-lang/template/issues/5) です。この版には最初の計画の全部(差し込み・注釈・繰り返し・条件・式・フィルター・ファイルと継承・挿入・自動エスケープ・空白の制御)があります。
+最初の計画は [#1](https://github.com/suru-lang/template/issues/1)、次の計画は [#5](https://github.com/suru-lang/template/issues/5) です。この版には両方の計画の全部(差し込み・注釈・繰り返し・条件・式・フィルター・ファイルと継承・挿入・自動エスケープ・空白の制御・テンプレートの中で決める名前・部品・行の整え・値で決めるテンプレートの名前)があります。
 
 ## 入れ方
 

@@ -4,7 +4,7 @@ English | [日本語](README_jp.md)
 
 A Jinja2-like template engine for [Suru (「する」)](https://github.com/suru-lang/suru), a programming language in Japanese. It is written entirely in Suru and needs no C library. It reads a template string, fills in values, and returns the text, for example the HTML pages of a Web app made with [suru-lang/http](https://github.com/suru-lang/http).
 
-The first plan is [#1](https://github.com/suru-lang/template/issues/1) and the next is [#5](https://github.com/suru-lang/template/issues/5). This version has everything in the first plan: substitution, comments, loops, conditions, expressions, filters, files with inheritance and include, auto-escaping and whitespace control.
+The first plan is [#1](https://github.com/suru-lang/template/issues/1) and the next is [#5](https://github.com/suru-lang/template/issues/5). This version has everything in both plans: substitution, comments, loops, conditions, expressions, filters, files with inheritance and include, auto-escaping, whitespace control, names set inside templates, macros, line trimming and template names from values.
 
 ## Installing
 
