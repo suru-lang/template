@@ -44,6 +44,8 @@ This prints 「花子さん、いらっしゃいませ。今日のおすすめ�
 | `設定 に 場所 を 雛形場所設定する` | a setting whose files are read from the folder 場所 |
 | `設定 に 名前 と 文字列 を 雛形部品追加する` | a setting with a template that inheritance and include can use by its name |
 | `設定 に 真 を 雛形逃避設定する` | a setting that HTML-escapes `{{ }}` in every template (`偽`: in none) |
+| `設定 に 真 を 雛形行整設定する` | a setting that removes the newline after `{% %}` and `{# #}`, and the spaces before them at the start of a line |
+| `t を 設定 で 雛形設定解析する` | read the template once with the setting (for `雛形行整設定する`) |
 
 Templates:
 
@@ -70,6 +72,7 @@ Templates:
 | `{{ 親区画 }}` | inside a block: the parent's content of the same block (`{{ super() }}`) |
 | `{% 「頭.html」 を 挿入する %}` | write 頭.html here with the same names (`{% include "頭.html" %}`) |
 | `{%- … -%}` ・ `{{- … -}}` ・ `{#- … -#}` | remove the spaces and newlines before or after, on the side of the `-` |
+| `{%+ … +%}` | with `雛形行整設定する`: keep the spaces before or the newline after, on the side of the `+` |
 
 Filters (each can be written the Suru way or the Jinja way):
 
@@ -198,6 +201,8 @@ xs を 二倍濾過する とは
 30. **Macros see their arguments and the names where they were defined.** Like a name set with `とは`, a macro can be used from there to the end of its block, and also inside itself, so it can call itself. Its body sees its arguments and the names at the place it was defined, not the names where it is called. What it writes is safe: it is escaped inside the body, not again.
 31. **`取り込む` takes all macros of a template.** `{% 「部品.html」 を 取り込む %}` (`{% import "部品.html" %}`) makes the macros at the top level of 部品.html usable from there, without writing anything of 部品.html. Unlike Jinja's `import … as`, there is no name before the macros. The file is read before rendering, like the ones for inheritance and include.
 
+32. **Line trimming is Jinja's `trim_blocks` and `lstrip_blocks` together.** With `雛形行整設定する` and `真`, the newline just after `{% %}` or `{# #}` is removed, and so are the spaces and tabs between the start of the line and the command, so commands on their own lines leave no empty lines. `{{ }}` is not changed. `{%+` keeps the spaces before and `+%}` keeps the newline after. It is off by default. The trimming happens when a template is read, so `雛形設定描画する`, `雛形設定読込描画する` and templates used by inheritance, include and `取り込む` use the setting, while `雛形解析する` doesn't; use `雛形設定解析する` to read a template once with it.
+
 ## Tests
 
 ```sh
@@ -207,7 +212,6 @@ kumu 点検
 
 ## Future work
 
-- Settings that trim the newline after a command and the spaces before it (Jinja's `trim_blocks` and `lstrip_blocks`)
 - Template names from values in `継承する` and `挿入する` (now strings written in the template)
 - Speed up large templates in the interpreter (a 10 KB template takes about 3 seconds with `suru`; compiled programs are much faster)
 
