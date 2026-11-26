@@ -4,7 +4,7 @@ English | [日本語](README_jp.md)
 
 A Jinja2-like template engine for [Suru (「する」)](https://github.com/suru-lang/suru), a programming language in Japanese. It is written entirely in Suru and needs no C library. It reads a template string, fills in values, and returns the text, for example the HTML pages of a Web app made with [suru-lang/http](https://github.com/suru-lang/http).
 
-The plan is [#1](https://github.com/suru-lang/template/issues/1). This version has substitution, comments, loops, conditions, expressions, filters, and files with inheritance and include; auto-escaping comes next.
+The plan is [#1](https://github.com/suru-lang/template/issues/1). This version has substitution, comments, loops, conditions, expressions, filters, files with inheritance and include, and auto-escaping.
 
 ## Installing
 
@@ -43,6 +43,7 @@ This prints 「花子さん、いらっしゃいませ。今日のおすすめ�
 | `名前 を 値 で 雛形読込描画する` ・ `名前 を 値 で 設定 に 雛形設定読込描画する` | read the file and render it (an action giving `（文字列 と 文字列） の 成否`); files named by inheritance and include are read from the same folder |
 | `設定 に 場所 を 雛形場所設定する` | a setting whose files are read from the folder 場所 |
 | `設定 に 名前 と 文字列 を 雛形部品追加する` | a setting with a template that inheritance and include can use by its name |
+| `設定 に 真 を 雛形逃避設定する` | a setting that HTML-escapes `{{ }}` in every template (`偽`: in none) |
 
 Templates:
 
@@ -83,6 +84,7 @@ Filters (each can be written the Suru way or the Jinja way):
 | `x を 四捨五入する` | `x \| round` ・ `round(2)` | rounded (to 2 decimal places) |
 | `x を 桁区切する` | | 「1,234,567」 |
 | `x を 文字列化する` ・ `JSON文字列にする` | `x \| string` ・ `tojson` | as written by `{{ }}`, or as JSON |
+| `x を 生にする` | `x \| safe` | written as is even where `{{ }}` is escaped |
 
 Inheritance with files: a page `頁.html` that uses `土台.html`.
 
@@ -161,6 +163,9 @@ xs を 二倍濾過する とは
 23. **Errors name the template.** An error in a template given by name begins with its name, like 「「土台.html」の3行目: …」. A template that inherits or includes itself, directly or not, is an error 「…の継承か挿入が輪になっています」.
 24. **Templates can also be given as strings.** `雛形部品追加する` adds a template by name to the setting, so inheritance and include also work with `雛形設定描画する` and in tests, without files.
 
+25. **HTML templates escape by themselves.** In a template whose name ends with `.html`, `.htm` or `.xml` (letter case aside), `{{ }}` writes values HTML-escaped (`& < > " '`), so values from people can't add tags. Templates given as strings without a name, and others such as `.txt`, write values as they are. `雛形逃避設定する` with `真` escapes in every template, and with `偽` in none.
+26. **`生にする` marks a value as safe.** `生にする` / `safe` gives a value written as is. `逃避する` / `escape` gives an escaped value that is also marked, so it is not escaped twice. Other filters take the string and give an ordinary value again.
+
 ## Tests
 
 ```sh
@@ -170,7 +175,7 @@ kumu 点検
 
 ## Future work
 
-- The rest of the plan in [#1](https://github.com/suru-lang/template/issues/1): auto-escaping, and an example with suru-lang/http
+- The rest of the plan in [#1](https://github.com/suru-lang/template/issues/1): whitespace control and an example with suru-lang/http
 - Speed up large templates in the interpreter (a 10 KB template takes about 2 seconds with `suru`; compiled programs are much faster)
 
 ## License
