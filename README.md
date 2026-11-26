@@ -4,7 +4,7 @@ English | [日本語](README_jp.md)
 
 A Jinja2-like template engine for [Suru (「する」)](https://github.com/suru-lang/suru), a programming language in Japanese. It is written entirely in Suru and needs no C library. It reads a template string, fills in values, and returns the text, for example the HTML pages of a Web app made with [suru-lang/http](https://github.com/suru-lang/http).
 
-The plan is [#1](https://github.com/suru-lang/template/issues/1). This version has substitution, comments and loops; conditions, filters, inheritance and auto-escaping come next.
+The plan is [#1](https://github.com/suru-lang/template/issues/1). This version has substitution, comments, loops, conditions and expressions; filters, inheritance and auto-escaping come next.
 
 ## Installing
 
@@ -52,6 +52,8 @@ Templates:
 | `{% 値段表 の それぞれ を 名 と 値 として %}` | repeat for each name and value of an object (`{% for 名, 値 in 値段表 %}`) |
 | `{% 空なら %}` | inside a loop: what to write when there is nothing to repeat (`{% else %}`) |
 | `{{ 繰り返し の 番号 }}` | inside a loop: the loop values (see Decisions) |
+| `{% もし 在庫 > 0 ならば %}` … `{% そうでなく もし 予約可 ならば %}` … `{% そうでなければ %}` … `{% 以上 %}` | conditions (`{% if 在庫 > 0 %}` … `{% elif 予約可 %}` … `{% else %}` … `{% endif %}`) |
+| `{{ 値段 * 2 + 1 }}` ・ `{{ 名 + 「さん」 }}` | expressions (see Decisions) |
 
 ## Decisions
 
@@ -68,6 +70,11 @@ Templates:
 10. **Loop values.** Inside a loop, `繰り返し` (also `loop`) has `番号` (from 1), `長さ`, `最初である`, `最後である` and `残数` (how many remain), and Jinja's `index`, `index0`, `length`, `first`, `last` and `revindex`. In nested loops it is the innermost loop's.
 11. **The empty case.** `{% 空なら %}` (or `{% else %}`) inside a loop starts what is written when the list or object is empty.
 
+12. **Conditions read like Suru.** `{% もし 条件 ならば %}`, `{% そうでなく もし 条件 ならば %}` and `{% そうでなければ %}` are Suru's words, and `if`, `elif` and `else` are the same. They end with `{% 以上 %}` (also `{% endif %}`).
+13. **What is true is Jinja's.** `無`, `偽`, `0`, 「」, empty lists and empty objects are false; everything else is true.
+14. **Missing names are 無 in conditions.** Inside a condition, a missing name, field or position is `無` instead of an error, so `{% もし 客.住所 ならば %}` checks whether there is one. Outside conditions they stay errors.
+15. **Expressions.** In order from the weakest: `または` / `or`; `かつ` / `and`; `not x` and `x でない`; comparisons `=` `==` `が` `≠` `!=` `<` `>` `<=` `>=` `≦` `≧` (one per expression); `+` `-`; `*` `/` `%`; the sign `-`. Parentheses `( )` and `（ ）` group. `+` adds numbers and joins strings; `<` and the like compare numbers with numbers and strings with strings; other mixes are errors. `真`, `偽`, `空` (an empty list) and `無` (also `true`, `false`, `null`, `none`) are values.
+
 ## Tests
 
 ```sh
@@ -77,7 +84,7 @@ kumu 点検
 
 ## Future work
 
-- The rest of the plan in [#1](https://github.com/suru-lang/template/issues/1): conditions, filters, files with inheritance and include, auto-escaping, and an example with suru-lang/http
+- The rest of the plan in [#1](https://github.com/suru-lang/template/issues/1): filters, files with inheritance and include, auto-escaping, and an example with suru-lang/http
 - Speed up large templates in the interpreter (a 10 KB template takes about 2 seconds with `suru`; compiled programs are much faster)
 
 ## License
