@@ -4,7 +4,7 @@ English | [日本語](README_jp.md)
 
 A Jinja2-like template engine for [Suru (「する」)](https://github.com/suru-lang/suru), a programming language in Japanese. It is written entirely in Suru and needs no C library. It reads a template string, fills in values, and returns the text, for example the HTML pages of a Web app made with [suru-lang/http](https://github.com/suru-lang/http).
 
-The plan is [#1](https://github.com/suru-lang/template/issues/1). This version has substitution, comments, loops, conditions, expressions, filters, files with inheritance and include, and auto-escaping.
+The plan is [#1](https://github.com/suru-lang/template/issues/1). This version has everything in the plan: substitution, comments, loops, conditions, expressions, filters, files with inheritance and include, auto-escaping and whitespace control.
 
 ## Installing
 
@@ -65,6 +65,7 @@ Templates:
 | `{% 区画 本文 %}` … `{% 以上 %}` | a block that a child template can replace (`{% block 本文 %}` … `{% endblock %}`) |
 | `{{ 親区画 }}` | inside a block: the parent's content of the same block (`{{ super() }}`) |
 | `{% 「頭.html」 を 挿入する %}` | write 頭.html here with the same names (`{% include "頭.html" %}`) |
+| `{%- … -%}` ・ `{{- … -}}` ・ `{#- … -#}` | remove the spaces and newlines before or after, on the side of the `-` |
 
 Filters (each can be written the Suru way or the Jinja way):
 
@@ -110,6 +111,25 @@ Inheritance with files: a page `頁.html` that uses `土台.html`.
   r を 表示する
 
 頁表示する
+```
+
+With [suru-lang/http](https://github.com/suru-lang/http) (add both with `kumu 追加`), a server answers with the page above. 「<b>ぶどう</b>」 is written escaped because the template is `.html`.
+
+```
+「JSON」 を 読み込んで 使う
+「HTTP」 を 読み込む
+「雛形」 を 読み込んで 使う
+
+設定 とは 雛形既定設定 に 「画面」 を 雛形場所設定する
+
+要求 を 案内する とは 手順
+  値 とは 「{"品々": ["りんご", "みかん", "<b>ぶどう</b>"]}」 を JSON読取した 結果
+  r とは 「頁.html」 を 値 で 設定 に 雛形設定読込描画した 結果
+  もし r が
+    s の 成功 ならば s を HTTP内のHTML応答して 結果にする
+    e の 失敗 ならば 500 で e を HTTP内の状態応答して 結果にする
+
+8080 を 案内すること で HTTP内の動作待受する
 ```
 
 Your own filters are added to a setting:
@@ -166,6 +186,8 @@ xs を 二倍濾過する とは
 25. **HTML templates escape by themselves.** In a template whose name ends with `.html`, `.htm` or `.xml` (letter case aside), `{{ }}` writes values HTML-escaped (`& < > " '`), so values from people can't add tags. Templates given as strings without a name, and others such as `.txt`, write values as they are. `雛形逃避設定する` with `真` escapes in every template, and with `偽` in none.
 26. **`生にする` marks a value as safe.** `生にする` / `safe` gives a value written as is. `逃避する` / `escape` gives an escaped value that is also marked, so it is not escaped twice. Other filters take the string and give an ordinary value again.
 
+27. **Whitespace control is Jinja's.** A `-` just inside a delimiter (`{%-`, `-%}`, `{{-`, `-}}`, `{#-`, `-#}`) removes the spaces, tabs and newlines of the text on that side. `{{ -x }}`, with a space before `-`, is a negative number as before.
+
 ## Tests
 
 ```sh
@@ -175,8 +197,10 @@ kumu 点検
 
 ## Future work
 
-- The rest of the plan in [#1](https://github.com/suru-lang/template/issues/1): whitespace control and an example with suru-lang/http
-- Speed up large templates in the interpreter (a 10 KB template takes about 2 seconds with `suru`; compiled programs are much faster)
+- Settings that trim the newline after a command and the spaces before it (Jinja's `trim_blocks` and `lstrip_blocks`)
+- Names set inside templates (`{% set %}`, `{% with %}`) and macros (`{% macro %}`)
+- Template names from values in `継承する` and `挿入する` (now strings written in the template)
+- Speed up large templates in the interpreter (a 10 KB template takes about 3 seconds with `suru`; compiled programs are much faster)
 
 ## License
 
