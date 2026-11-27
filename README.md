@@ -208,6 +208,17 @@ xs を 二倍濾過する とは
 
 34. **Text is read in pieces, not one character at a time.** The template is split at each `{`, and the text between is kept whole; only the commands are read character by character. Large templates use little memory: 125 KB of text renders with about 60 MB, where it ran out of memory before. `例/大きさ.suru` renders a template of about 58,000 characters with 900 commands in about 5 seconds with `suru`, 2 of them for starting.
 
+## API documentation
+
+The API documentation is made from the comments in `雛形.suru`: the head comment of the file and the comment right above each public definition, written in English.
+
+```sh
+kumu 文書                                                            # writes docs/api/雛形.md
+pip install -r docs/requirements.txt && sphinx-build docs docs/_build   # HTML in docs/_build
+```
+
+`docs/` and `.readthedocs.yaml` were written by `kumu 文書 --雛形` (Suru 0.11.0 or later). On every build, Read the Docs downloads kumu 0.11.0, runs `kumu 文書 --出力 docs/api` and then Sphinx, so the generated pages are not committed. The editor hover shows the same descriptions.
+
 ## Tests
 
 ```sh
