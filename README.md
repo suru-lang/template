@@ -210,7 +210,7 @@ xs を 二倍濾過する とは
 
 ## API documentation
 
-The API documentation is made from the comments in `雛形.suru`: the head comment of the file and the comment right above each public definition, written in English.
+The API documentation is made from the comments in `雛形.suru`: the head comment of the file and the comment right above each public definition, written in English. It is published at https://suru-lang-template.readthedocs.io/en/latest/.
 
 ```sh
 kumu 文書                                                            # writes docs/api/雛形.md
